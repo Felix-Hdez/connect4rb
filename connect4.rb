@@ -10,11 +10,11 @@ class Connect4
     # 1: player 1
     # 2: player 2
     @board = Array.new(6) { Array.new(7) { 0 } }
-    @pieces = [' ', '●'.red, '●'.green]
+    @pieces = [' ', '●'.red, '●'.brown]
   end
 
   def play
-    print(board_stdout)
+    print(board_stdout) until game_over?
   end
 
   def board_stdout
@@ -26,14 +26,15 @@ class Connect4
 
   def row_stdout(board_row)
     row_stdout = '|'
-    board_row.each do |peice_type|
-      piece = piece_stdout(peice_type)
-      row_stdout += "#{piece}|"
+    board_row.each do |piece_type|
+      piece = piece_stdout(piece_type)
+      row_stdout += piece
     end
+    row_stdout += '|'
     row_stdout
   end
 
-  def piece_stdout(_piece_type)
-    ''
+  def piece_stdout(piece_type)
+    @pieces[piece_type]
   end
 end
