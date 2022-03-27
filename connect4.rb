@@ -9,12 +9,17 @@ class Connect4
     # 0: empty
     # 1: player 1
     # 2: player 2
+    @current_player = 1
     @board = Array.new(6) { Array.new(7) { 0 } }
     @pieces = [' ', '●'.red, '●'.brown]
   end
 
   def play
-    print(board_stdout) until game_over?
+    until game_over?
+      print(board_stdout)
+      make_move
+      switch_curr_player
+    end
   end
 
   def board_stdout
@@ -36,5 +41,18 @@ class Connect4
 
   def piece_stdout(piece_type)
     @pieces[piece_type]
+  end
+
+  def make_move
+    move = player_input until valid_input? move
+  end
+
+  def player_input
+    print 'Make a choice: '
+    gets.to_i
+  end
+
+  def switch_curr_player
+    @current_player = { 1 => 2, 2 => 1 }[@current_player]
   end
 end
