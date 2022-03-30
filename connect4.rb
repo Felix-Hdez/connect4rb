@@ -55,4 +55,11 @@ class Connect4
   def switch_curr_player
     @current_player = { 1 => 2, 2 => 1 }[@current_player]
   end
+
+  def valid_input?(input)
+    return false if input.nil? || !input.between?(0, 6)
+
+    column = @board.map { |row| row[input] }
+    column[-1].zero?
+  end
 end

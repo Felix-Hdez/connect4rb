@@ -162,22 +162,39 @@ describe Connect4 do
   describe '#valid_input?' do
     context 'invalid input' do
       it 'returns false if input is nil' do
-        expect(game.valid_input?(nil)).to be_false
+        expect(game.valid_input?(nil)).to be(false)
       end
       it 'returns false if input is -1' do
-        expect(game.valid_input?(-1)).to be_false
+        expect(game.valid_input?(-1)).to be(false)
       end
     end
     context 'valid input in empty board' do
       it 'returns true with 0' do
-        expect(game.valid_input?(0)).to be_true
+        expect(game.valid_input?(0)).to be(true)
       end
-      it 'returns true with 9' do
-        expect(game.valid_input?(6)).to be_true
+      it 'returns true with 6' do
+        expect(game.valid_input?(6)).to be(true)
       end
     end
-    ##TODO: invalid input in filled board that would be valid in an enpty board
+    context 'with a filled board' do
+      subject(:filled_game) do
+        object = described_class.new
+        ##            index:  0  1  2  3  4  5  6
+        object.board = [[0, 0, 0, 2, 0, 0, 0],
+                        [0, 0, 0, 1, 0, 0, 0],
+                        [0, 0, 0, 2, 0, 0, 0],
+                        [0, 0, 0, 1, 0, 0, 0],
+                        [2, 0, 1, 2, 0, 0, 0],
+                        [2, 0, 2, 1, 0, 1, 1]]
+        object
+      end
+      it 'returns false when the chosen column is filled' do
+        expect(filled_game.valid_input?(3)).to be false
+      end
+    end
   end
-  
-  describe '#player_input' do; end
+
+  describe '#player_input' do
+    #  only contains print/gets statements -> no need for testing
+  end
 end
