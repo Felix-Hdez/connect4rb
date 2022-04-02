@@ -1,8 +1,14 @@
 require_relative 'connect4'
 require_relative 'string colors'
+require_relative 'human'
+require_relative 'computer'
 
 describe Connect4 do
-  subject(:game) { described_class.new }
+  let(:human_move) { 5 }
+  let(:computer_move) { 5 }
+  let(:human_player) { instance_double(HumanPlayer, make_move: human_move) }
+  let(:computer_player) { instance_double(HumanPlayer, make_move: computer_move) }
+  subject(:game) { described_class.new(human_player, computer_player) }
   let(:player1_piece) { '●'.red }
   let(:player2_piece) { '●'.brown }
   let(:empty_piece) { ' ' }
@@ -18,9 +24,9 @@ describe Connect4 do
       expect(game.board).to eq(board)
     end
     context 'when no arguments are passed' do
-      it 'sets current player as 1' do
+      it 'sets current player as 0' do
         current_player = game.instance_variable_get(:@current_player)
-        expect(current_player).to eq(1)
+        expect(current_player).to eq(0)
       end
       context 'first piece' do
         it 'is default value' do
@@ -34,9 +40,11 @@ describe Connect4 do
           expect(piece).to eq(player2_piece)
         end
       end
-      it 'creates default empty piece' do
-        piece = game.instance_variable_get(:@pieces)[0]
-        expect(piece).to eq(empty_piece)
+      context 'empty piece' do
+        it 'is default value' do
+          piece = game.instance_variable_get(:@pieces)[0]
+          expect(piece).to eq(empty_piece)
+        end
       end
     end
   end
@@ -75,6 +83,7 @@ describe Connect4 do
         game.play
       end
     end
+    # TODO: if game is over, loop ends, displays who won.
   end
 
   describe '#board_stdout' do
@@ -120,19 +129,9 @@ describe Connect4 do
   end
 
   describe '#switch_curr_player' do
-    context 'when the current player is 1' do
+    context 'when the current player is 0' do
       before do
-        game.instance_variable_set(:@current_player, 1)
-      end
-      it 'changes the current player to 2' do
-        game.switch_curr_player
-        current_player = game.instance_variable_get(:@current_player)
-        expect(current_player).to eq(2)
-      end
-    end
-    context 'when the current player is 2' do
-      before do
-        game.instance_variable_set(:@current_player, 2)
+        game.instance_variable_set(:@current_player, 0)
       end
       it 'changes the current player to 1' do
         game.switch_curr_player
@@ -140,61 +139,19 @@ describe Connect4 do
         expect(current_player).to eq(1)
       end
     end
+    context 'when the current player is 1' do
+      before do
+        game.instance_variable_set(:@current_player, 1)
+      end
+      it 'changes the current player to 0' do
+        game.switch_curr_player
+        current_player = game.instance_variable_get(:@current_player)
+        expect(current_player).to eq(0)
+      end
+    end
   end
 
   describe '#make_move' do
-    context 'when #player_input returns two invalid values and then a valid one' do
-      before do
-        allow(game).to receive(:player_input).and_return(-1, 9, 0)
-        allow(game).to receive(:valid_input?).and_return(false, false, false, true)
-      end
-      it 'calls #player_input until it returns a valid_input' do
-        expect(game).to receive(:player_input).exactly(3).times
-        game.make_move
-      end
-      it 'calls #valid_input? with until it returns true' do
-        expect(game).to receive(:valid_input?).exactly(4).times
-        game.make_move
-      end
-    end
-  end
-
-  describe '#valid_input?' do
-    context 'invalid input' do
-      it 'returns false if input is nil' do
-        expect(game.valid_input?(nil)).to be(false)
-      end
-      it 'returns false if input is -1' do
-        expect(game.valid_input?(-1)).to be(false)
-      end
-    end
-    context 'valid input in empty board' do
-      it 'returns true with 0' do
-        expect(game.valid_input?(0)).to be(true)
-      end
-      it 'returns true with 6' do
-        expect(game.valid_input?(6)).to be(true)
-      end
-    end
-    context 'with a filled board' do
-      subject(:filled_game) do
-        object = described_class.new
-        ##            index:  0  1  2  3  4  5  6
-        object.board = [[0, 0, 0, 2, 0, 0, 0],
-                        [0, 0, 0, 1, 0, 0, 0],
-                        [0, 0, 0, 2, 0, 0, 0],
-                        [0, 0, 0, 1, 0, 0, 0],
-                        [2, 0, 1, 2, 0, 0, 0],
-                        [2, 0, 2, 1, 0, 1, 1]]
-        object
-      end
-      it 'returns false when the chosen column is filled' do
-        expect(filled_game.valid_input?(3)).to be false
-      end
-    end
-  end
-
-  describe '#player_input' do
-    #  only contains print/gets statements -> no need for testing
+    # TODO: cover with tests
   end
 end

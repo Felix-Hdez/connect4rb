@@ -4,12 +4,13 @@ class Connect4
   attr_accessor :board
   attr_reader :pieces, :nil_piece
 
-  def initialize
+  def initialize(player1 = HumanPlayer.new, player2 = ComputerPlayer.new)
     # @board and @pieces CODE:
     # 0: empty
     # 1: player 1
     # 2: player 2
-    @current_player = 1
+    @player_controller = [player1, player2]
+    @current_player = 0
     @board = Array.new(6) { Array.new(7) { 0 } }
     @pieces = [' ', '●'.red, '●'.brown]
   end
@@ -44,22 +45,11 @@ class Connect4
   end
 
   def make_move
-    move = player_input until valid_input? move
-  end
-
-  def player_input
-    print 'Make a choice: '
-    gets.to_i
+    move = @player_controller[@current_player].make_move(@board)
   end
 
   def switch_curr_player
-    @current_player = { 1 => 2, 2 => 1 }[@current_player]
+    @current_player = { 0 => 1, 1 => 0 }[@current_player]
   end
 
-  def valid_input?(input)
-    return false if input.nil? || !input.between?(0, 6)
-
-    column = @board.map { |row| row[input] }
-    column[-1].zero?
-  end
 end
