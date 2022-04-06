@@ -7,8 +7,8 @@ class Connect4
   def initialize(player1 = HumanPlayer.new, player2 = ComputerPlayer.new)
     @player_controller = [player1, player2]
     @current_player = 0
-    @columns = 7
     @rows = 6
+    @columns = 7
     @board = Array.new(@rows) { Array.new(@columns) { 0 } }
     @pieces = [' ', '●'.red, '●'.brown]
     # @board and @pieces CODE:
@@ -19,7 +19,7 @@ class Connect4
   end
 
   def play
-    until game_over?
+    until (@winner = game_over?)
       print board_stdout
       make_move
       switch_curr_player
@@ -72,4 +72,40 @@ class Connect4
     "\n#{winner_name} has won!!!"
   end
 
+  def game_over?
+    winner = nil
+
+    @rows.times do |row|
+      @columns.times do |column|
+        # rows -
+        if row <= @rows - 4
+          line = 4.times.map { |i| @board[row + i][column] }
+          winner ||= winner_line?(line)
+        end
+        # columns |
+        if column <= @columns - 4
+          line = 4.times.map { |i| @board[row][column + i] }
+          winner ||= winner_line?(line)
+        end
+        # diagonals \
+        if (column <= @columns - 4) && (row <= @rows - 4)
+          line = 4.times.map { |i| @board[row + i][column + i] }
+          winner ||= winner_line?(line)
+        end
+        # antidiagonals /
+        if (column > @columns - 4) && (row <= @rows - 4)
+          line = 4.times.map { |i| @board[row + i][column - i] }
+          winner ||= winner_line?(line)
+        end
+      end
+    end
+    winner
+  end
+
+  private
+
+  def winner_line?(line)
+    line = line.uniq
+    return line[0] if line.size == 1 && line != [0]
+  end
 end

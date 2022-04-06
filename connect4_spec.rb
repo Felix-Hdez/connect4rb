@@ -270,6 +270,7 @@ describe Connect4 do
     end
   end
 
+  #TODO: implement specific row, column, diagonal and antidiagonal tests.
   describe '#game_over?' do
     context 'not game over' do
       context 'when @board is empty' do
