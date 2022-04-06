@@ -241,8 +241,145 @@ describe Connect4 do
         game.instance_variable_set(:@winner, 0)
       end
       it 'prints the first player as a winner' do
-        message = "#{player1_name} has won!!!"
+        message = "\n#{player1_name} has won!!!"
         expect(game.show_results).to eql(message)
+      end
+    end
+    context 'when winner is 1' do
+      let(:player1_name) { 'Human player' }
+      let(:player2_name) { 'Computer' }
+      before do
+        controllers = [instance_double(HumanPlayer, name: player1_name),
+                       instance_double(ComputerPlayer, name: player2_name)]
+        game.instance_variable_set(:@player_controller, controllers)
+        game.instance_variable_set(:@winner, 1)
+      end
+      it 'prints the second player as a winner' do
+        message = "\n#{player2_name} has won!!!"
+        expect(game.show_results).to eql(message)
+      end
+    end
+    context 'when winner is nil (tie)' do
+      before do
+        game.instance_variable_set(:@winner, nil)
+      end
+      it 'prints the tie statement' do
+        message = "\nTie! Nobody wins\n"
+        expect(game.show_results).to eql(message)
+      end
+    end
+  end
+
+  describe '#game_over?' do
+    context 'not game over' do
+      context 'when @board is empty' do
+        it 'returns nil' do
+          expect(game.game_over?).to be_nil
+        end
+      end
+      context 'when @board is half filled' do
+        before do
+          board = [[0, 0, 0, 2, 0, 0, 0],
+                   [0, 0, 0, 1, 0, 0, 0],
+                   [0, 0, 0, 2, 1, 0, 0],
+                   [0, 0, 1, 1, 2, 0, 0],
+                   [2, 0, 2, 2, 1, 1, 2],
+                   [1, 0, 2, 1, 1, 1, 2]]
+          game.instance_variable_set(:@board, board)
+        end
+        it 'returns nil' do
+          expect(game.game_over?).to be_nil
+        end
+      end
+    end
+    context 'game over' do
+      context 'winner is player 1' do
+        context 'when @board is half filled' do
+          before do
+            board = [[0, 0, 0, 2, 0, 0, 0],
+                     [0, 0, 0, 1, 0, 0, 0],
+                     [0, 0, 0, 2, 1, 0, 1],
+                     [0, 0, 1, 1, 2, 1, 2],
+                     [2, 0, 2, 2, 1, 1, 2],
+                     [1, 0, 2, 1, 1, 1, 2]]
+            game.instance_variable_set(:@board, board)
+          end
+          it 'returns 1' do
+            expect(game.game_over?).to eq(1)
+          end
+        end
+        context 'when @board is almost filled' do
+          before do
+            board = [[1, 1, 2, 1, 0, 1, 2],
+                     [2, 1, 2, 1, 2, 1, 2],
+                     [1, 2, 1, 2, 1, 2, 1],
+                     [2, 1, 2, 1, 2, 1, 2],
+                     [2, 1, 2, 1, 2, 1, 2],
+                     [1, 2, 1, 2, 1, 2, 1]]
+            game.instance_variable_set(:@board, board)
+          end
+          it 'returns 1' do
+            expect(game.game_over?).to eq(1)
+          end
+        end
+        context 'when @board is almost empty' do
+          before do
+            board = [[0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0],
+                     [0, 2, 2, 2, 0, 0, 0],
+                     [0, 1, 1, 1, 1, 0, 0]]
+            game.instance_variable_set(:@board, board)
+          end
+          it 'returns 1' do
+            expect(game.game_over?).to eq(1)
+          end
+        end
+      end
+      context 'winner is player 2' do
+        context 'when @board is half filled' do
+          before do
+            board = [[0, 0, 0, 1, 0, 0, 0],
+                     [0, 0, 0, 2, 0, 0, 0],
+                     [0, 0, 0, 1, 2, 0, 2],
+                     [0, 0, 2, 2, 1, 2, 1],
+                     [1, 0, 1, 1, 2, 2, 1],
+                     [2, 0, 1, 2, 2, 2, 1]]
+            game.instance_variable_set(:@board, board)
+          end
+          it 'returns 2' do
+            expect(game.game_over?).to eq(2)
+          end
+        end
+        context 'when @board is almost filled' do
+          before do
+            board = [[2, 2, 1, 2, 0, 2, 1],
+                     [1, 2, 1, 2, 1, 2, 1],
+                     [2, 1, 2, 1, 2, 1, 2],
+                     [1, 2, 1, 2, 1, 2, 1],
+                     [1, 2, 1, 2, 1, 2, 1],
+                     [2, 1, 2, 1, 2, 1, 2]]
+            game.instance_variable_set(:@board, board)
+          end
+          it 'returns 2' do
+            expect(game.game_over?).to eq(2)
+          end
+        end
+        context 'when @board is almost empty' do
+          before do
+            board = [[0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 1, 1, 1, 0, 0],
+                     [0, 2, 2, 2, 2, 1, 0]]
+            game.instance_variable_set(:@board, board)
+          end
+          it 'returns 2' do
+            expect(game.game_over?).to eq(2)
+          end
+        end
       end
     end
   end

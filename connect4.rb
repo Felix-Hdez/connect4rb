@@ -66,7 +66,10 @@ class Connect4
   end
 
   def show_results
+    return "\nTie! Nobody wins\n" if @winner.nil?
+
     winner_name = @player_controller[@winner].name
-    "#{winner_name} has won!!!"
+    "\n#{winner_name} has won!!!"
   end
+
 end
