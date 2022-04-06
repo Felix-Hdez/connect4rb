@@ -1,5 +1,10 @@
+
 class HumanPlayer
-  def initialize; end
+  attr_accessor :name
+
+  def initialize
+    @name = 'Human player'
+  end
 
   def make_move(board)
     move = player_input until valid_input? move, board
