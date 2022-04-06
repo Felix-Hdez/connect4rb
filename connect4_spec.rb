@@ -46,17 +46,25 @@ describe Connect4 do
           expect(piece).to eq(empty_piece)
         end
       end
+      it 'creates array @player_controller with 2 items' do
+        controllers = game.instance_variable_get(:@player_controller)
+        expect(controllers).to be_an(Array)
+        expect(controllers).to have_attributes(size: 2)
+      end
     end
   end
 
   describe '#play' do
     let(:board_stdout_example) { 'board stdout example' }
+    before do
+      allow(game).to receive(:print)
+      allow(game).to receive(:make_move).and_return(4)
+      allow(game).to receive(:board_stdout).and_return(board_stdout_example)
+      allow(game).to receive(:show_results)
+    end
     context 'when game_over? is false once' do
       before do
         allow(game).to receive(:game_over?).and_return(false, true)
-        allow(game).to receive(:print)
-        allow(game).to receive(:make_move).and_return(4)
-        allow(game).to receive(:board_stdout).and_return(board_stdout_example)
       end
       it 'calls #make_move once' do
         expect(game).to receive(:make_move).once
@@ -66,13 +74,14 @@ describe Connect4 do
         expect(game).to receive(:print).with(board_stdout_example).once
         game.play
       end
+      it 'calls #show_results once' do
+        expect(game).to receive(:show_results).once
+        game.play
+      end
     end
     context 'when game_over? is false twice' do
       before do
         allow(game).to receive(:game_over?).and_return(false, false, true)
-        allow(game).to receive(:print)
-        allow(game).to receive(:make_move).and_return(4, 4)
-        allow(game).to receive(:board_stdout).and_return(board_stdout_example)
       end
       it 'calls #make_move twice' do
         expect(game).to receive(:make_move).twice
@@ -82,8 +91,11 @@ describe Connect4 do
         expect(game).to receive(:print).with(board_stdout_example).twice
         game.play
       end
+      it 'calls #show_results once' do
+        expect(game).to receive(:show_results).once
+        game.play
+      end
     end
-    # TODO: if game is over, loop ends, displays who won.
   end
 
   describe '#board_stdout' do
@@ -152,6 +164,86 @@ describe Connect4 do
   end
 
   describe '#make_move' do
-    # TODO: cover with tests
+    before do
+      allow(game).to receive(:insert_piece)
+    end
+    context 'when @current_player is 0' do
+      before do
+        game.instance_variable_set(:@current_player, 0)
+      end
+      it 'calls #make_move for the first @player_controller' do
+        first_controller = game.instance_variable_get(:@player_controller)[0]
+        expect(first_controller).to receive(:make_move)
+        game.make_move
+      end
+      it 'calls #insert_piece with the piece number' do
+        move = human_move
+        expect(game).to receive(:insert_piece).with(move, 1)
+        game.make_move
+      end
+    end
+    context 'when @current_player is 1' do
+      before do
+        game.instance_variable_set(:@current_player, 1)
+      end
+      it 'calls #make_move for the second @player_controller' do
+        second_controller = game.instance_variable_get(:@player_controller)[1]
+        expect(second_controller).to receive(:make_move)
+        game.make_move
+      end
+    end
+  end
+
+  describe '#insert_piece' do
+    context 'when @board is empty' do
+      it 'inserts the piece correctly' do
+        expected_board = [[0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 1, 0, 0, 0]]
+        game.insert_piece(3, 1)
+        new_board = game.instance_variable_get(:@board)
+        expect(new_board).to eq(expected_board)
+      end
+    end
+    context 'when @board is half filled' do
+      it 'inserts the piece correctly' do
+        filled_board = [[0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0],
+                        [0, 2, 1, 2, 0, 1, 2],
+                        [2, 1, 2, 1, 2, 1, 1],
+                        [1, 2, 1, 2, 2, 1, 1],
+                        [1, 2, 2, 1, 1, 2, 1]]
+        game.instance_variable_set(:@board, filled_board)
+        expected_board = [[0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0],
+                          [0, 2, 1, 2, 1, 1, 2],
+                          [2, 1, 2, 1, 2, 1, 1],
+                          [1, 2, 1, 2, 2, 1, 1],
+                          [1, 2, 2, 1, 1, 2, 1]]
+        game.insert_piece(4, 1)
+        new_board = game.instance_variable_get(:@board)
+        expect(new_board).to eq(expected_board)
+      end
+    end
+  end
+
+  describe '#show_results' do
+    context 'when winner is 0' do
+      let(:player1_name) { 'Human player' }
+      let(:player2_name) { 'Computer' }
+      before do
+        controllers = [instance_double(HumanPlayer, name: player1_name),
+                       instance_double(ComputerPlayer, name: player2_name)]
+        game.instance_variable_set(:@player_controller, controllers)
+        game.instance_variable_set(:@winner, 0)
+      end
+      it 'prints the first player as a winner' do
+        message = "#{player1_name} has won!!!"
+        expect(game.show_results).to eql(message)
+      end
+    end
   end
 end
