@@ -1,3 +1,4 @@
+require_relative 'controller_spec'
 require_relative 'human'
 
 describe HumanPlayer do
@@ -10,6 +11,9 @@ describe HumanPlayer do
      [0, 0, 0, 0, 0, 0, 0],
      [0, 0, 0, 0, 0, 0, 0]]
   end
+
+  include_examples 'player controller'
+
   describe '#make_move' do
     context 'when #player_input returns two invalid values and then a valid one' do
       before do
