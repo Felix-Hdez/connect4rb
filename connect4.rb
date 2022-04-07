@@ -1,4 +1,6 @@
 require_relative 'string colors'
+require_relative 'human'
+require_relative 'computer'
 
 class Connect4
   attr_accessor :board
@@ -10,7 +12,7 @@ class Connect4
     @rows = 6
     @columns = 7
     @board = Array.new(@rows) { Array.new(@columns) { 0 } }
-    @pieces = [' ', '●'.red, '●'.brown]
+    @pieces = ['_', '●'.green, '●'.red]
     # @board and @pieces CODE:
     # 0: empty
     # 1: player 1
@@ -20,18 +22,21 @@ class Connect4
 
   def play
     until (@winner = game_over?)
-      print board_stdout
+      puts board_stdout
+      print current_controller.move_prompt
       make_move
       switch_curr_player
     end
-    print show_results
+    puts board_stdout
+    puts show_results
   end
 
   def board_stdout
-    output = ''
+    output = " 1 2 3 4 5 6 7\n"
     @board.each do |row|
-      output += row_stdout(row)
+      output += "#{row_stdout(row)}\n"
     end
+    output[0...-1]
   end
 
   def row_stdout(board_row)
@@ -40,16 +45,15 @@ class Connect4
       piece = piece_stdout(piece_type)
       row_stdout += piece
     end
-    row_stdout += '|'
     row_stdout
   end
 
   def piece_stdout(piece_type)
-    @pieces[piece_type]
+    @pieces[piece_type] + '|'
   end
 
   def make_move
-    move = @player_controller[@current_player].make_move(@board)
+    move = current_controller.make_move(@board)
     piece = @current_player + 1
     insert_piece(move, piece)
   end
@@ -99,10 +103,15 @@ class Connect4
         end
       end
     end
+    winner -= 1 unless winner.nil?
     winner
   end
 
   private
+
+  def current_controller
+    @player_controller[@current_player]
+  end
 
   def winner_line?(line)
     line = line.uniq

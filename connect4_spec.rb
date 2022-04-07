@@ -6,12 +6,12 @@ require_relative 'computer'
 describe Connect4 do
   let(:human_move) { 5 }
   let(:computer_move) { 5 }
-  let(:human_player) { instance_double(HumanPlayer, make_move: human_move) }
-  let(:computer_player) { instance_double(HumanPlayer, make_move: computer_move) }
+  let(:human_player) { instance_double(HumanPlayer, make_move: human_move, move_prompt: '') }
+  let(:computer_player) { instance_double(HumanPlayer, make_move: computer_move, move_prompt: 'The computer moves') }
   subject(:game) { described_class.new(human_player, computer_player) }
-  let(:player1_piece) { '●'.red }
-  let(:player2_piece) { '●'.brown }
-  let(:empty_piece) { ' ' }
+  let(:player1_piece) { '●' }
+  let(:player2_piece) { '●' }
+  let(:empty_piece) { '_' }
 
   describe '#initialize' do
     it 'creates new empty board' do
@@ -31,19 +31,19 @@ describe Connect4 do
       context 'first piece' do
         it 'is default value' do
           piece = game.instance_variable_get(:@pieces)[1]
-          expect(piece).to eq(player1_piece)
+          expect(piece).to include(player1_piece)
         end
       end
       context 'second piece' do
         it 'is default value' do
           piece = game.instance_variable_get(:@pieces)[2]
-          expect(piece).to eq(player2_piece)
+          expect(piece).to include(player2_piece)
         end
       end
       context 'empty piece' do
         it 'is default value' do
           piece = game.instance_variable_get(:@pieces)[0]
-          expect(piece).to eq(empty_piece)
+          expect(piece).to include(empty_piece)
         end
       end
       it 'creates array @player_controller with 2 items' do
@@ -57,6 +57,7 @@ describe Connect4 do
   describe '#play' do
     let(:board_stdout_example) { 'board stdout example' }
     before do
+      allow(game).to receive(:puts)
       allow(game).to receive(:print)
       allow(game).to receive(:make_move).and_return(4)
       allow(game).to receive(:board_stdout).and_return(board_stdout_example)
@@ -70,8 +71,8 @@ describe Connect4 do
         expect(game).to receive(:make_move).once
         game.play
       end
-      it 'calls #print with board_stoud output once' do
-        expect(game).to receive(:print).with(board_stdout_example).once
+      it 'calls #puts with board_stoud output twice' do
+        expect(game).to receive(:puts).with(board_stdout_example).twice
         game.play
       end
       it 'calls #show_results once' do
@@ -87,8 +88,8 @@ describe Connect4 do
         expect(game).to receive(:make_move).twice
         game.play
       end
-      it 'calls #print with board_stoud output once' do
-        expect(game).to receive(:print).with(board_stdout_example).twice
+      it 'calls #puts with board_stoud output once' do
+        expect(game).to receive(:puts).with(board_stdout_example).exactly(3).times
         game.play
       end
       it 'calls #show_results once' do
@@ -121,7 +122,7 @@ describe Connect4 do
       end
 
       it 'returns correct row output with empty row' do
-        row_output = '|       |'
+        row_output = '|' + (empty_piece * 7)
         row_input = [0, 0, 0, 0, 0, 0, 0]
         expect(game.row_stdout(row_input)).to eq(row_output)
       end
@@ -129,14 +130,14 @@ describe Connect4 do
   end
 
   describe '#piece_stdout' do
-    it 'returns the empty piece when the piece type is 0' do
-      expect(game.piece_stdout(0)).to eq(empty_piece)
+    it 'inlcudes the empty piece when the piece type is 0' do
+      expect(game.piece_stdout(0)).to include(empty_piece)
     end
-    it 'returns the player1 piece when the piece type is 1' do
-      expect(game.piece_stdout(1)).to eq(player1_piece)
+    it 'includes the player1 piece when the piece type is 1' do
+      expect(game.piece_stdout(1)).to include(player1_piece)
     end
-    it 'returns the player2 piece when the piece type is 1' do
-      expect(game.piece_stdout(2)).to eq(player2_piece)
+    it 'inlcudes the player2 piece when the piece type is 1' do
+      expect(game.piece_stdout(2)).to include(player2_piece)
     end
   end
 
@@ -166,6 +167,8 @@ describe Connect4 do
   describe '#make_move' do
     before do
       allow(game).to receive(:insert_piece)
+      allow(human_player).to receive(:move_prompt)
+      allow(computer_player).to receive(:move_prompt)
     end
     context 'when @current_player is 0' do
       before do
@@ -294,7 +297,7 @@ describe Connect4 do
       end
     end
     context 'game over' do
-      context 'winner is player 1' do
+      context 'winner is player 0' do
         context 'when @board is half filled' do
           before do
             board = [[0, 0, 0, 2, 0, 0, 0],
@@ -305,8 +308,8 @@ describe Connect4 do
                      [1, 0, 2, 1, 1, 1, 2]]
             game.instance_variable_set(:@board, board)
           end
-          it 'returns 1' do
-            expect(game.game_over?).to eq(1)
+          it 'returns 0' do
+            expect(game.game_over?).to eq(0)
           end
         end
         context 'when @board is almost filled' do
@@ -319,8 +322,8 @@ describe Connect4 do
                      [1, 2, 1, 2, 1, 2, 1]]
             game.instance_variable_set(:@board, board)
           end
-          it 'returns 1' do
-            expect(game.game_over?).to eq(1)
+          it 'returns 0' do
+            expect(game.game_over?).to eq(0)
           end
         end
         context 'when @board is almost empty' do
@@ -333,12 +336,12 @@ describe Connect4 do
                      [0, 1, 1, 1, 1, 0, 0]]
             game.instance_variable_set(:@board, board)
           end
-          it 'returns 1' do
-            expect(game.game_over?).to eq(1)
+          it 'returns 0' do
+            expect(game.game_over?).to eq(0)
           end
         end
       end
-      context 'winner is player 2' do
+      context 'winner is player 1' do
         context 'when @board is half filled' do
           before do
             board = [[0, 0, 0, 1, 0, 0, 0],
@@ -349,8 +352,8 @@ describe Connect4 do
                      [2, 0, 1, 2, 2, 2, 1]]
             game.instance_variable_set(:@board, board)
           end
-          it 'returns 2' do
-            expect(game.game_over?).to eq(2)
+          it 'returns 1' do
+            expect(game.game_over?).to eq(1)
           end
         end
         context 'when @board is almost filled' do
@@ -363,8 +366,8 @@ describe Connect4 do
                      [2, 1, 2, 1, 2, 1, 2]]
             game.instance_variable_set(:@board, board)
           end
-          it 'returns 2' do
-            expect(game.game_over?).to eq(2)
+          it 'returns 1' do
+            expect(game.game_over?).to eq(1)
           end
         end
         context 'when @board is almost empty' do
@@ -377,8 +380,8 @@ describe Connect4 do
                      [0, 2, 2, 2, 2, 1, 0]]
             game.instance_variable_set(:@board, board)
           end
-          it 'returns 2' do
-            expect(game.game_over?).to eq(2)
+          it 'returns 1' do
+            expect(game.game_over?).to eq(1)
           end
         end
       end
